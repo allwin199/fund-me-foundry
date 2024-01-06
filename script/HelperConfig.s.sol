@@ -9,6 +9,7 @@
 pragma solidity 0.8.20;
 
 import {Script} from "forge-std/Script.sol";
+import {MockV3Aggregator} from "../test/mocks/MockV3Aggregator.sol";
 
 contract HelperConfig is Script {
     // If we are on a local anvil, we deploy mocks
@@ -20,13 +21,16 @@ contract HelperConfig is Script {
 
     NetworkConfig public activeNetworkConfig;
 
+    uint8 public constant DECIAMLS = 8;
+    int256 public constant INITIAL_PRICE = 2000e8;
+
     constructor() {
         if (block.chainid == 11155111) {
             activeNetworkConfig = getSepoliaEthConfig();
         } else if (block.chainid == 1) {
             activeNetworkConfig = getMainnetEthConfig();
         } else if (block.chainid == 31337) {
-            activeNetworkConfig = getAnvilEthConfig();
+            activeNetworkConfig = getOrCreateAnvilEthConfig();
         }
     }
 
@@ -43,5 +47,30 @@ contract HelperConfig is Script {
 
     // while working with Anvil config
     // 1. We need to deploy mock priceFeed contract
-    function getAnvilEthConfig() public pure returns (NetworkConfig memory) {}
+    // 2. Return the mock addresses
+    function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
+        if (activeNetworkConfig.priceFeed != address(0)) {
+            return activeNetworkConfig;
+        }
+        // whenever a address is defined in a struct
+        // address will be initialized to address(0)
+        // If already chain id is detected then activeNetworkConfig will have different address than address(0)
+
+        // If it is address(0)
+        // then we deploy the mocks
+
+        // The reason we are doing conditions above is
+        // If we don't have the above condition
+        // Everytime when getAnvilEthConfig() is called
+        // mocks will be deployed
+        // since we have conditions to check
+        // If mocks are already deployed then address will not be address(0)
+
+        vm.startBroadcast();
+        MockV3Aggregator mockV3Aggregator = new MockV3Aggregator(DECIAMLS, INITIAL_PRICE);
+        vm.stopBroadcast();
+
+        NetworkConfig memory anvilConfig = NetworkConfig({priceFeed: address(mockV3Aggregator)});
+        return anvilConfig;
+    }
 }

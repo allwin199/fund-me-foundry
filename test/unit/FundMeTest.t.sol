@@ -10,8 +10,8 @@ import {Test, console} from "forge-std/Test.sol";
 // we get "vm" , "console" and many other cheat codes from "forge-std/Test.sol"
 // We have to inherit "Test" inside this current contract to use all the above cheat codes
 
-import {FundMe} from "../src/FundMe.sol";
-import {DeployFundMe} from "../script/DeployFundMe.s.sol";
+import {FundMe} from "../../src/FundMe.sol";
+import {DeployFundMe} from "../../script/DeployFundMe.s.sol";
 
 contract FundMeTest is Test {
     DeployFundMe deployer;
