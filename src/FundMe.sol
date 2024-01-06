@@ -10,7 +10,7 @@
 // 1 ETH = 1e18 = 1000000000000000000 WEI = 1 * 10 ** 18
 
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.18;
+pragma solidity 0.8.20;
 
 import {PriceConverter} from "./PriceConverter.sol";
 import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
@@ -50,6 +50,7 @@ contract FundMe {
     // since funders is a storage variable we use s_funders
 
     mapping(address funder => uint256 amountFunded) public s_addressToAmountFunded;
+    // s_addressToAmountFunded is a storage variable
 
     // Anyone can call fund() so we have to make it as public
     // Todo
@@ -86,10 +87,12 @@ contract FundMe {
         // this amount should be added with the previous
     }
 
-    // this is not the efficient way to withdraw
-    // refer Foundry_FundMe
     function withdraw() public onlyOwner {
         address[] memory exstingFunders = s_funders;
+        // s_funders is a storage variable
+        // If we refer storage variable several times, we have to spend more gas
+        // If we cache the values of storage variable into memory
+        // It will be gas efficient
         for (uint256 funderIndex = 0; funderIndex < exstingFunders.length; funderIndex++) {
             address funder = exstingFunders[funderIndex];
             s_addressToAmountFunded[funder] = 0;
@@ -107,6 +110,8 @@ contract FundMe {
         // use the recommended call method
         // call (forward all gas or set gas, returns bool)
         // to send ether, receiving address has to be marked as type payable
+        // from this contract ether will be sent to the owner
+        // therfore owner has to be marked as payable
 
         // "this" refers to the current contract
 
@@ -120,6 +125,12 @@ contract FundMe {
             revert FundMe__NOT_OWNER();
         }
         _;
+
+        // whenever a function is marked with this modifier
+        // before executing that function
+        // modifier will get executed and check through all the conditions
+        // If the conditions are satisfied then, the actual function will get executed
+        // _; once all checks passed, modifier allows the original function to get executed
 
         // If we didn't use custom errors
         // Then we are storing this string as string array in memory
