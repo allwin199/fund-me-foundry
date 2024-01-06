@@ -154,6 +154,11 @@ contract FundMe {
         fund();
     }
     // fallback() must have external visibility and payable state mutability.
+
+    // Getters
+    function getVersion() external view returns (uint256) {
+        return i_priceFeed.version();
+    }
 }
 
 /*
