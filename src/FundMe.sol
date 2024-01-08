@@ -21,10 +21,10 @@ error FundMe__WITHDRAW_FAILED();
 error FundMe__NOT_ENOUGH_ETH();
 
 contract FundMe {
-    AggregatorV3Interface public i_priceFeed;
+    AggregatorV3Interface private i_priceFeed;
     // price feed address for ETH/USD
 
-    address public immutable i_owner;
+    address private immutable i_owner;
 
     constructor(address _priceFeed) {
         i_priceFeed = AggregatorV3Interface(_priceFeed);
@@ -40,16 +40,16 @@ contract FundMe {
     using PriceConverter for uint256;
     // for all uint256 we can use the PriceConverter library
 
-    uint256 public constant MINIMUM_USD = 5e18;
+    uint256 private constant MINIMUM_USD = 5e18;
     // since priceInUsd will have 18 decimals, minimum USD should also have 18 decimals
 
-    address[] public s_funders;
+    address[] private s_funders;
     // whenver someone funds this contract, their address will be stored in this array to keep trace of all the funders
     // using array, we can keep track of all the funders, but we cannot keep track of the amount each funder funded
     // for that we have to use mapping
     // since funders is a storage variable we use s_funders
 
-    mapping(address funder => uint256 amountFunded) public s_addressToAmountFunded;
+    mapping(address funder => uint256 amountFunded) private s_addressToAmountFunded;
     // s_addressToAmountFunded is a storage variable
 
     // Anyone can call fund() so we have to make it as public
@@ -156,8 +156,24 @@ contract FundMe {
     // fallback() must have external visibility and payable state mutability.
 
     // Getters
+    function getMinimumUsd() external pure returns (uint256) {
+        return MINIMUM_USD;
+    }
+
+    function getOwner() external view returns (address) {
+        return i_owner;
+    }
+
     function getVersion() external view returns (uint256) {
         return i_priceFeed.version();
+    }
+
+    function getFunder(uint256 funderIndex) external view returns (address) {
+        return s_funders[funderIndex];
+    }
+
+    function getAddressToAmountFunded(address funder) external view returns (uint256) {
+        return s_addressToAmountFunded[funder];
     }
 }
 
