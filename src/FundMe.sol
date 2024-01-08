@@ -21,7 +21,7 @@ error FundMe__WITHDRAW_FAILED();
 error FundMe__NOT_ENOUGH_ETH();
 
 contract FundMe {
-    AggregatorV3Interface private i_priceFeed;
+    AggregatorV3Interface private immutable i_priceFeed;
     // price feed address for ETH/USD
 
     address private immutable i_owner;
