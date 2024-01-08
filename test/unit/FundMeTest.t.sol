@@ -27,6 +27,7 @@ contract FundMeTest is Test {
     address user = makeAddr("FUNDER");
 
     uint256 constant STARTING_BALANCE = 10e18;
+    uint256 constant FUNDING_AMOUNT = 1e18;
 
     // Before testing the code we need the contract to be deployed
     // let's deploy with the help of deploy scripts
@@ -60,10 +61,12 @@ contract FundMeTest is Test {
     /////////////////////////////////////////////////////
     /////////////////////   Fund   //////////////////////
     /////////////////////////////////////////////////////
+
     function test_RevertIf_FundingAmount_Lessthan_MinimumUsd() public {
         // vm.expectRevert() -> Expects an revert on next line
         vm.expectRevert(abi.encodeWithSelector(FundMe__NOT_ENOUGH_ETH.selector));
         fundMe.fund();
+
         // To send a value to fund()
         // fundMe.fund{value: 1e18}()
         // since we are not sending any value
@@ -72,19 +75,88 @@ contract FundMeTest is Test {
         // To use expectRevert with a custom error type with parameters, ABI encode the error type.
     }
 
-    function test_UserCan_FundWith_requiredUsd_UpdatesDS() public {
-        // Arrange
-        uint256 fundingAmount = 1e18;
-
+    modifier fundingRequiredUsd() {
         // Act
         vm.startPrank(user);
-        fundMe.fund{value: fundingAmount}();
+        fundMe.fund{value: FUNDING_AMOUNT}();
         vm.stopPrank();
+        _;
+    }
+    // By creating a funding modifier this can be plugged to any function
 
+    function test_Funding_Updates_Mapping() public fundingRequiredUsd {
+        // Assert
+        uint256 fundedAmount = fundMe.getAddressToAmountFunded(user);
+        assertEq(fundedAmount, FUNDING_AMOUNT);
+    }
+
+    function test_Funding_Updates_Array() public fundingRequiredUsd {
         // Assert
         address latestFunder = fundMe.getFunder(0);
         assertEq(latestFunder, user);
-        uint256 fundedAmount = fundMe.getAddressToAmountFunded(user);
-        assertEq(fundedAmount, fundingAmount);
+    }
+
+    /////////////////////////////////////////////////////
+    /////////////////   Withdraw   //////////////////////
+    /////////////////////////////////////////////////////
+
+    function test_RevertIf_Withdraw_NotCalledBy_Owner() public fundingRequiredUsd {
+        vm.expectRevert();
+        fundMe.withdraw();
+    }
+
+    function test_Owner_CanWithdraw() public fundingRequiredUsd {
+        // Arrange
+        address owner = fundMe.getOwner();
+        uint256 startingOwnerBalance = owner.balance;
+        uint256 startingFundMeBalance = address(fundMe).balance;
+
+        // Act
+        vm.startPrank(owner); // we are pranking as owner
+        fundMe.withdraw();
+
+        uint256 endingOwnerBalance = owner.balance;
+        uint256 endingFundMeBalance = address(fundMe).balance;
+
+        // Assert
+        assertEq(endingOwnerBalance, startingOwnerBalance + startingFundMeBalance);
+        assertEq(endingFundMeBalance, 0);
+    }
+
+    function test_Owner_CanWithdraw_AfterMutiple_Funding() public fundingRequiredUsd {
+        // To simulate funding with more people
+        // hoax can be used
+        // hoax -> Sets up a prank from an address that has some ether.
+        // hoax is a combination of
+        // makeAddr()
+        // vm.deal()
+        // vm.prank();
+        // by using hoax above 3 functionalities can be used
+
+        // To generate a address we can do address(1) or address(2) ....
+        // but only constraint is number inside address() should be uint160
+        // sometimes address(0) might revert, tried avoiding it
+
+        uint256 numberOfFunders = 10;
+        for (uint160 funder = 1; funder < numberOfFunders; funder++) {
+            hoax(address(funder), STARTING_BALANCE);
+            fundMe.fund{value: FUNDING_AMOUNT}();
+        }
+
+        address owner = fundMe.getOwner();
+        uint256 startingOwnerBalance = owner.balance;
+        uint256 startingFundMeBalance = address(fundMe).balance;
+
+        // Act
+        vm.startPrank(owner);
+        fundMe.withdraw();
+        vm.stopPrank();
+
+        uint256 endingOwnerBalance = owner.balance;
+        uint256 endingFundMeBalance = address(fundMe).balance;
+
+        // Assert
+        assertEq(endingOwnerBalance, startingOwnerBalance + startingFundMeBalance);
+        assertEq(endingFundMeBalance, 0);
     }
 }
