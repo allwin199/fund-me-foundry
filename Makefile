@@ -54,3 +54,5 @@ withdraw:
 # To interact with the contract
 # make fund ARGS="--network anvil" or make fund
 # make fund ARGS="--network sepolia"
+
+# forge script script/DeployFundMe.s.sol --rpc-url $SEPOLIA_RPC_URL --account sepoliaAccount --sender 0xfc5918d98077fbd6e3dc6655eac9ebe0fe0ffae6 --broadcast --verify $ETHERSCAN_API_KEY
