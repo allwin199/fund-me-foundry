@@ -22,7 +22,8 @@ contract FundFundMe is Script {
     // To get the most recent deployed
     // foundry-devops package is used
     function run() external {
-        address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment("FundMe", 31337);
+        address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment("FundMe", block.chainid);
+        console.log("mostRecentlyDeployed", mostRecentlyDeployed);
         fundFundMe(mostRecentlyDeployed);
     }
 }
@@ -41,7 +42,7 @@ contract WithdrawFundMe is Script {
     }
 
     function run() external {
-        address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment("FundMe", 31337);
+        address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment("FundMe", block.chainid);
         withdrawFundMe(mostRecentlyDeployed);
     }
 }
