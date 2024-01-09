@@ -37,8 +37,11 @@ ifeq ($(findstring --network sepolia,$(ARGS)),--network sepolia)
 	NETWORK_ARGS := --rpc-url $(SEPOLIA_RPC_URL) --private-key $(SEPOLIA_PRIVATE_KEY) --broadcast --verify --etherscan-api-key $(ETHERSCAN_API_KEY) -vvvv
 endif
 
-deploy:
-	@forge script script/DeployFundMe.s.sol:DeployFundMe $(NETWORK_ARGS)
+anvil_deploy:
+	@forge script script/DeployFundMe.s.sol --rpc-url $(ANVIL_RPC_URL) --account $(ACCOUNT_FOR_ANVIL) --sender $(ANVIL_KEYCHAIN) --broadcast
+
+sepolia_deploy:
+	@forge script script/DeployFundMe.s.sol --rpc-url $(SEPOLIA_RPC_URL) --account $(ACCOUNT_FOR_SEPOLIA) --sender $(SEPOLIA_KEYCHAIN) --broadcast --verify $(ETHERSCAN_API_KEY)
 
 fund:
 	@forge script script/Interactions.s.sol:FundFundMe $(NETWORK_ARGS)
