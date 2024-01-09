@@ -2,6 +2,8 @@
 
 .PHONY: all test clean deploy fund help install snapshot format anvil 
 
+# .phoney describes all the command are not directories
+
 help:
 	@echo "Usage:"
 	@echo "  make deploy [ARGS=...]\n    example: make deploy ARGS=\"--network sepolia\""
@@ -43,8 +45,8 @@ anvil_deploy:
 sepolia_deploy:
 	@forge script script/DeployFundMe.s.sol --rpc-url $(SEPOLIA_RPC_URL) --account $(ACCOUNT_FOR_SEPOLIA) --sender $(SEPOLIA_KEYCHAIN) --broadcast --verify $(ETHERSCAN_API_KEY)
 
-fund:
-	@forge script script/Interactions.s.sol:FundFundMe $(NETWORK_ARGS)
+anvil_fund:
+	@forge script script/Interactions.s.sol:FundFundMe --rpc-url $(ANVIL_RPC_URL) --account $(ACCOUNT_FOR_ANVIL) --sender $(ANVIL_KEYCHAIN) --broadcast
 
 withdraw:
 	@forge script script/Interactions.s.sol:WithdrawFundMe $(NETWORK_ARGS)
