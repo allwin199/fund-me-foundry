@@ -42,6 +42,9 @@ contract FundMe {
 
     uint256 private constant MINIMUM_USD = 5e18;
     // since priceInUsd will have 18 decimals, minimum USD should also have 18 decimals
+    // User will fund ETH to this contract
+    // 1 ETH will be represented as 1e18 -> 18decimal places
+    // To compare this with minimum usd it should be also in 18 decimals
 
     address[] private s_funders;
     // whenver someone funds this contract, their address will be stored in this array to keep trace of all the funders
